@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -49,3 +50,19 @@ def review_detail_view(request, id):
         return Response(data={'error:' 'Review not found!'})
     data = ReviewSerializer(review).data
     return Response(data=data)
+
+
+@api_view(['GET'])
+def avg_reviews(request):
+    movies = Movie.objects.annotate(
+        average_rating=models.Sum(models.F('ratings')) / models.Count(models.F('ratings'))
+    )
+    serializer = MovieListSerializer(movies, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def film_directors(request):
+    directors = Movie.objects.annotate(count_of_movies=models.Sum(models.F('director')))
+    serializer = MoviesDirectors(directors, many=True)
+    return Response(serializer.data)
